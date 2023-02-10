@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Main --no-ocr" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="Main" />
+    <module name="viewer-to-pdf.main" />
+    <option name="PROGRAM_PARAMETERS" value="--no-ocr" />
+    <option name="REDIRECT_INPUT" value="true" />
+    <option name="INPUT_FILE" value="src/test/resources/debug-pdf-url.txt" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

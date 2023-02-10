@@ -1,52 +1,47 @@
-import PdfHandler.Companion.addImagePage
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.layout.element.Image
 import java.io.File
 import java.nio.file.Paths
 
-fun main(args: Array<String>) {
-    SSLManager.ignoreSSL()
+class Main {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            setupLogger()
+            SSLManager.ignoreSSL()
+            //TODO Add flags and args (e.g. input URL, output file, silent, etc.)
 
+            println("AnyFlip URL:")
+            val url = readln().trim()
 
-    val url = readln().trim()
-//    val url = "https://online.anyflip.com/sqtpd/uree/files/mobile/" //FIXME Temp path
+            val out = Paths.get("out").toAbsolutePath().toFile()
+            if (out.exists()) out.deleteRecursively()
+            out.mkdir()
 
-    val out = File(Paths.get("out").toAbsolutePath().toString())
-    println(out.absolutePath)
-    if (out.exists())
-        out.deleteRecursively()
-    out.mkdir()
+            //TODO Customizable output path
+            val outFile = "${out.absolutePath}${File.separator}pdr.pdf"
 
-    val pdf = PdfHandler("out/podr.pdf")
-    pdf.use({ System.err.println("File error: $it") }) { document ->
-        Downloader.iteratePages { page ->
-            Downloader.download("$url$page.jpg")?.let {
-                val img = Image(ImageDataFactory.createJpeg(it))
-                document.addImagePage(img)
+            val pdf = PdfHandler(outFile)
+            when {
+                args.contains("--no-ocr") -> {
+                    pdf.use { document ->
+                        Downloader.iteratePages { page ->
+                            Downloader.download("$url$page.jpg")?.let {
+                                val img = Image(ImageDataFactory.createJpeg(it))
+                                pdf.addImagePage(document, img)
+                            }
+                        }
+                    }
+                }
+
+                else -> {
+                    Downloader.useFiles(url) { files ->
+                        pdf.combineWithOCR(files)
+                    }
+                }
             }
+
+            println("Saved: $outFile")
         }
     }
-
-//    try {
-//        val pdf = PdfDocument(PdfWriter("out/podr.pdf"))
-//        val document = Document(pdf)
-//        document.setMargins(0f, 0f, 0f, 0f)
-//
-//        var page = 1
-//        do {
-//            val result = Downloader.download("$url$page.jpg")?.let {
-//                val img = Image(ImageDataFactory.createJpeg(it))
-//                pdf.addNewPage(PageSize(img.imageWidth, img.imageHeight))
-//                document.add(img)
-//            }
-//            if (result != null)
-//                print("\rDownloaded: ${page - 1} pages...")
-//            page++
-//        } while (result != null)
-//        println("\nDone")
-//
-//        document.close()
-//    } catch (e: FileNotFoundException) {
-//        System.err.println("File error: ${e.message}")
-//    }
 }
